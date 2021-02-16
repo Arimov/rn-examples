@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { RefreshControl, View, Text, TouchableOpacity, TouchableHighlight,
     AccessibilityInfoButton, SafeAreaView, ScrollView, Dimensions, StyleSheet, Image } from 'react-native'
 import { observer } from 'mobx-react'
@@ -19,7 +19,6 @@ export const SelectCustomerScreen = observer(({ navigation }) => {
 
     useEffect(() => {
         if (root.customersStore.customers.length === 0) {
-            //get data fom API
             root.customersStore.get(root.authStore.token).then(setLoaded(false)).then(setLoaded(false))
         } else {
             setLoaded(false)
@@ -43,6 +42,7 @@ export const SelectCustomerScreen = observer(({ navigation }) => {
     }
 
     const balance = (total, overdue) => {
+        //ToDo logic Overdue?
         return formatMoney(total)
     }
 
@@ -53,6 +53,7 @@ export const SelectCustomerScreen = observer(({ navigation }) => {
 
     const Item = ({ item }) => (
         <TouchableOpacity
+            key={item.Id}
             accessibilityRole="button"
             onPress={ () => selectCustomer(item) }
         >
@@ -74,8 +75,11 @@ export const SelectCustomerScreen = observer(({ navigation }) => {
         </TouchableOpacity>
     );
 
+    const MemoItem = React.memo(Item)
+
     const renderItem = (data, rowMap) => (
-        <Item item={data.item} />
+        <MemoItem item={data.item}/>
+        // <Item item={data.item} />
     )
 
     const returnFilter = (filter) => {
@@ -83,6 +87,7 @@ export const SelectCustomerScreen = observer(({ navigation }) => {
         setShowFilter(false)
         root.customersStore.setFilter(filter)
     }
+
 
     return (        
             <Page
@@ -95,7 +100,7 @@ export const SelectCustomerScreen = observer(({ navigation }) => {
                     <Loading />
                     :
                     <>
-                    {root.customersStore.customers.length === 0 ?
+                    {(root.customersStore.getCustomers.length === 0) && (!isShowFilter) ?
                             <NoData />
                             :
                             <>
@@ -104,6 +109,9 @@ export const SelectCustomerScreen = observer(({ navigation }) => {
                                 initialNumToRender={15}
                                 renderItem={renderItem}
                                 keyExtractor={item => item.CustomerId}
+                                maxToRenderPerBatch={20}
+                                removeClippedSubviews={true}
+                                updateCellsBatchingPeriod={3000}
                             />
 
                             {
