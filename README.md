@@ -1,2 +1,3 @@
 # rn-examples
-Examples of React Native code
+
+This repository is intended to showcase code examples
